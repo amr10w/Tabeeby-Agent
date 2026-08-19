@@ -1,7 +1,7 @@
 from enum import Enum
 
 class LLMEnums(Enum):
-    OLLAMA:str = "OLLAMA"
+    OLLAMA = "OLLAMA"
 
 class OllamaEnums(Enum):
     SYSTEM = "system"

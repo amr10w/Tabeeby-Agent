@@ -76,8 +76,8 @@ class OllamaProvider(LLMInterface):
         messages = list(chat_history) if chat_history else []
         messages.append(self.construct_prompt(
             prompt=prompt,
-            role=OllamaEnums.USER.value),
-            truncate=True)
+            role=OllamaEnums.USER.value,
+            truncate=True))
 
         try:
             response=self.client.chat(
