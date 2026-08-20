@@ -74,10 +74,11 @@ class OllamaProvider(LLMInterface):
         )
 
         messages = list(chat_history) if chat_history else []
-        messages.append(self.construct_prompt(
-            prompt=prompt,
-            role=OllamaEnums.USER.value,
-            truncate=True))
+        if prompt and prompt.strip():
+            messages.append(self.construct_prompt(
+                prompt=prompt,
+                role=OllamaEnums.USER.value,
+                truncate=True))
 
         try:
             response=self.client.chat(
@@ -123,3 +124,39 @@ class OllamaProvider(LLMInterface):
                 "role":role,
                 "content":prompt
             } 
+
+    def set_embedding_model(self, model_id: str, embedding_size: int):
+        self.embedding_model_id = model_id
+        self.embedding_size = embedding_size
+
+
+    def embed_text(self, text: str, document_type: str = None):
+        if not self.client:
+            self.logger.error("Ollama client was not set")
+            return None
+
+        if not self.embedding_model_id:
+            self.logger.error("Embedding model for Ollama was not set")
+            return None
+
+        response = self.client.embed(
+            model=self.embedding_model_id,
+            input=text.strip(),
+            dimensions=self.embedding_size
+        )
+
+        if not response:
+            self.logger.error("Error while embedding text with Ollama")
+            return None
+
+        embeddings = None
+        if hasattr(response, "embeddings"):
+            embeddings = response.embeddings
+        elif isinstance(response, dict):
+            embeddings = response.get("embeddings")
+
+        if not embeddings or len(embeddings) == 0:
+            self.logger.error("Error while embedding text with Ollama")
+            return None
+
+        return embeddings[0]

@@ -12,13 +12,22 @@ class Settings(BaseSettings):
     APP_NAME: str
     APP_VERSION: str
 
+    GENERATION_BACKEND: str
+    EMBEDDING_BACKEND: str
+
     OLLAMA_API_KEY: Optional[str] = None
     OLLAMA_API_URL: Optional[str] = None
 
     GENERATION_MODEL_ID: Optional[str] = None
+    EMBEDDING_MODEL_ID: Optional[str] = None
+    EMBEDDING_MODEL_SIZE: Optional[int] = None
     INPUT_DAFAULT_MAX_CHARACTERS: Optional[int] = None
     GENERATION_DAFAULT_MAX_TOKENS: Optional[int] = None
     GENERATION_DAFAULT_TEMPERATURE: Optional[float] = None
+
+    VECTOR_DB_BACKEND: str
+    VECTOR_DB_PATH: str
+    VECTOR_DB_DISTANCE_METHOD: Optional[str] = None
 
     class Config:
         env_file = ".env"

@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 
 from models.enums.ResponseEnums import ResponseSignal
 from routes.schemes.chat import ChatRequest, ChatResponse
-
+from controllers import Agent
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
 
@@ -11,33 +11,24 @@ router = APIRouter(prefix="/chat", tags=["Chat"])
 @router.post("", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest,req:Request) -> ChatResponse:
 
-    client = req.app.state.llm_client
+    agent: Agent = getattr(req.app.state, "agent", None)
 
-    if not client:
+    if not agent:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={
-                "signal": ResponseSignal.LLM_CLIENT_NOT_INITIALIZED.value,
-            },
+            content={"signal": ResponseSignal.LLM_CLIENT_NOT_INITIALIZED.value},
         )
 
-    ollama_res = client.generate_response(
+    # The agent runs the loop, calls search_doctors if needed, and returns the final answer
+    final_text, history, cost = agent.run(
         prompt=request.prompt,
-       
+        
     )
-
-    if not ollama_res:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={
-                "signal": ResponseSignal.LLM_GENERATE_ERROR.value,
-            },
-        )
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={
             "signal": ResponseSignal.LLM_GENERATE_SUCCESS.value,
-            "response": ollama_res.message.content,
+            "response": final_text,
         },
     )

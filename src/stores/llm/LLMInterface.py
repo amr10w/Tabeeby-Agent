@@ -21,3 +21,11 @@ class LLMInterface(ABC):
     @abstractmethod
     def construct_prompt(self, prompt: str, role: str,truncate: bool = False):
         pass
+
+    @abstractmethod
+    def set_embedding_model(self, model_id: str, embedding_size: int):
+        pass
+
+    @abstractmethod
+    def embed_text(self, text: str, document_type: str = None):
+        pass
