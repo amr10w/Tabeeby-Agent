@@ -4,8 +4,6 @@ Provides semantic similarity search and hybrid metadata filtering (area, fee bud
 over the Vezeeta doctors vector collection.
 """
 
-from __future__ import annotations
-
 from typing import Any, Dict, List, Optional
 
 try:
@@ -30,9 +28,15 @@ SUMMARY_FIELDS = (
 
 
 class DoctorTools:
-    def __init__(self, embedding_client: LLMInterface, vectordb_client: VectorDBInterface):
+    def __init__(
+        self,
+        embedding_client: LLMInterface,
+        vectordb_client: VectorDBInterface,
+        collection_name: str = "vezeeta_doctors",
+    ):
         self.client_embedding = embedding_client
         self.client_vectorDB = vectordb_client
+        self.collection_name = collection_name
             
     def _serialize_compact_doctor(self,
         payload: Dict[str, Any], score: Optional[float] = None
@@ -53,7 +57,6 @@ class DoctorTools:
 
         return compact
 
-
     def search_doctors(self,
         query: str,
         area: Optional[str] = None,
@@ -61,7 +64,7 @@ class DoctorTools:
         max_fee: Optional[int] = None,
         specialty: Optional[str] = None,
         limit: int = 5,
-        collection_name: str = "vezeeta_doctors",
+        collection_name: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """Search for doctors in Egypt matching clinical symptoms, specialty, area, and budget.
 
@@ -82,6 +85,12 @@ class DoctorTools:
         if self.client_embedding is None or self.client_vectorDB is None:
             return []
 
+        # Resolve collection name with fallback
+        target_collection = collection_name or self.collection_name or "vezeeta_doctors"
+        if not self.client_vectorDB.is_collection_existed(target_collection):
+            if self.client_vectorDB.is_collection_existed("vezeeta_doctors"):
+                target_collection = "vezeeta_doctors"
+
         # 1. Embed query
         vec_query = self.client_embedding.embed_text(text=str(query).strip())
         if not vec_query:
@@ -99,7 +108,7 @@ class DoctorTools:
 
         # 3. Perform vector similarity search
         raw_results = self.client_vectorDB.search_by_vector(
-            collection_name=collection_name,
+            collection_name=target_collection,
             vector=vec_query,
             limit=limit,
             query_filter=query_filter,
@@ -114,7 +123,6 @@ class DoctorTools:
 
         return compact_results
 
-
     def search_doctors_raw(
         self,
         query: str,
@@ -123,7 +131,7 @@ class DoctorTools:
         max_fee: Optional[int] = None,
         specialty: Optional[str] = None,
         limit: int = 5,
-        collection_name: str = "vezeeta_doctors",
+        collection_name: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """Search doctors and return raw vector DB points (including full payload and scores).
 
@@ -134,6 +142,12 @@ class DoctorTools:
 
         if self.client_embedding is None or self.client_vectorDB is None:
             return []
+
+        # Resolve collection name with fallback
+        target_collection = collection_name or self.collection_name or "vezeeta_doctors"
+        if not self.client_vectorDB.is_collection_existed(target_collection):
+            if self.client_vectorDB.is_collection_existed("vezeeta_doctors"):
+                target_collection = "vezeeta_doctors"
 
         vec_query = self.client_embedding.embed_text(text=str(query).strip())
         if not vec_query:
@@ -149,7 +163,7 @@ class DoctorTools:
             )
 
         return self.client_vectorDB.search_by_vector(
-            collection_name=collection_name,
+            collection_name=target_collection,
             vector=vec_query,
             limit=limit,
             query_filter=query_filter,
