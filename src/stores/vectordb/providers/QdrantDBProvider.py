@@ -1,6 +1,6 @@
 from ..VectorDBInterface import VectorDBInterface
 from ..VectorDBEnums import DistanceMethodEnums
-from typing import List, Optional
+from typing import Any, List, Optional
 import logging
 
 try:
@@ -259,13 +259,90 @@ class QdrantDBProvider(VectorDBInterface):
 
     # ── similarity search ────────────────────────────────────────
 
+    def build_filter(
+        self,
+        area: Optional[str] = None,
+        min_fee: Optional[int] = None,
+        max_fee: Optional[int] = None,
+        specialty: Optional[str] = None,
+        **kwargs,
+    ) -> Optional[Any]:
+        """Construct a Qdrant `models.Filter` from search constraints.
+
+        Parameters
+        ----------
+        area : str, optional
+            Clinic area / neighborhood keyword to filter on.
+        min_fee : int, optional
+            Minimum consultation fee.
+        max_fee : int, optional
+            Maximum consultation fee.
+        specialty : str, optional
+            Specialty keyword to filter on.
+
+        Returns
+        -------
+        models.Filter or None
+            Populated Qdrant Filter object or None if no conditions exist.
+        """
+        if models is None:
+            self.logger.error("qdrant_client.models not available")
+            return None
+
+        conditions = []
+
+        if area and str(area).strip():
+            conditions.append(
+                models.FieldCondition(
+                    key="address",
+                    match=models.MatchValue(value=str(area).strip()),
+                )
+            )
+
+        range_kwargs = {}
+        if min_fee is not None:
+            range_kwargs["gte"] = min_fee
+        if max_fee is not None:
+            range_kwargs["lte"] = max_fee
+
+        if range_kwargs:
+            conditions.append(
+                models.FieldCondition(
+                    key="fee",
+                    range=models.Range(**range_kwargs),
+                )
+            )
+
+        if specialty and str(specialty).strip():
+            conditions.append(
+                models.FieldCondition(
+                    key="specialty",
+                    match=models.MatchValue(value=str(specialty).strip()),
+                )
+            )
+
+        return models.Filter(must=conditions) if conditions else None
+
     def search_by_vector(
         self,
         collection_name: str,
         vector: list,
         limit: int = 10,
+        query_filter: Optional[Any] = None,
     ):
-        """Return the top-*limit* nearest neighbours for the given query vector."""
+        """Return the top-*limit* nearest neighbours for the given query vector.
+
+        Parameters
+        ----------
+        collection_name : str
+            Target Qdrant collection name.
+        vector : list
+            Query embedding vector.
+        limit : int
+            Maximum results to return (default 10).
+        query_filter : models.Filter, optional
+            Optional Qdrant filter object for deterministic metadata filtering.
+        """
         if not self.client:
             self.logger.error("Qdrant client is not connected")
             return []
@@ -274,6 +351,7 @@ class QdrantDBProvider(VectorDBInterface):
             results = self.client.query_points(
                 collection_name=collection_name,
                 query=vector,
+                query_filter=query_filter,
                 limit=limit,
             ).points
 
