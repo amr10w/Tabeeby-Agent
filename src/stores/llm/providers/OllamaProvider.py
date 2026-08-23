@@ -78,7 +78,7 @@ class OllamaProvider(LLMInterface):
             messages.append(self.construct_prompt(
                 prompt=prompt,
                 role=OllamaEnums.USER.value,
-                truncate=True))
+                truncate=truncate))
 
         try:
             response=self.client.chat(
