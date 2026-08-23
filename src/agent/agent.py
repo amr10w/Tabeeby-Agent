@@ -44,8 +44,6 @@ class Agent:
         tools: Optional[Sequence[Callable[..., Any]]] = None,
         max_iterations: int = 10,
         system_prompt: Optional[str] = None,
-        client_embedding: Optional[LLMInterface] = None,
-        client_vectorDB: Optional[VectorDBInterface] = None,
         total_cost: float = 0.0,
         input_token_cost: float = 0.0000014,
         output_token_cost: float = 0.0000044,
@@ -66,8 +64,6 @@ class Agent:
         self.client = client
         self.max_iterations = max_iterations
         self.system_prompt = system_prompt or VEZEETA_SYSTEM_PROMPT
-        self.client_embedding = client_embedding
-        self.client_vectorDB = client_vectorDB
         self.total_cost: float = float(total_cost)
         self.input_token_cost: float = float(input_token_cost)
         self.output_token_cost: float = float(output_token_cost)

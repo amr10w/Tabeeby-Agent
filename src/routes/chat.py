@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 
 from models.enums.ResponseEnums import ResponseSignal
 from routes.schemes.chat import ChatRequest, ChatResponse
-from controllers import Agent
+from agent import Agent
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
 
@@ -22,6 +22,8 @@ async def chat_endpoint(request: ChatRequest,req:Request) -> ChatResponse:
     # The agent runs the loop, calls search_doctors if needed, and returns the final answer
     final_text, history, cost = agent.run(
         prompt=request.prompt,
+        chat_history=request.chat_history,
+        total_cost=request.total_cost
         
     )
 

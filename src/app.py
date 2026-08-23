@@ -7,8 +7,8 @@ from routes.chat import router as chat_router
 from routes.embed import router as embed_router
 from stores.llm.LLMProviderFactory import LLMProviderFactory
 from stores.vectordb.VectorDBProviderFactory import VectorDBProviderFactory
-from controllers.agent import Agent
-from tools import ALL_TOOLS
+from agent import Agent
+from tools import DoctorTools,read_file,write_file,list_files,create_directory
 
 
 @asynccontextmanager
@@ -37,6 +37,11 @@ async def lifespan(app: FastAPI):
     app.state.embedding_client = embedding_client
     app.state.vector_db_client = vector_db_client
 
+    doctor_tool=DoctorTools(embedding_client=embedding_client,
+                            vectordb_client=vector_db_client)
+
+    ALL_TOOLS = [read_file,write_file,list_files,create_directory,doctor_tool.search_doctors]
+
     app.state.agent = Agent(
         client=generation_client,
         tools=ALL_TOOLS,
@@ -56,7 +61,6 @@ app = FastAPI(
 )
 
 app.include_router(chat_router)
-app.include_router(embed_router)
 
 
 @app.get("/")

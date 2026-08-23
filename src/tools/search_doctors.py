@@ -66,7 +66,7 @@ class DoctorTools:
         limit: int = 5,
         collection_name: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        """Search for doctors in Egypt matching clinical symptoms, specialty, area, and budget.
+        """Search for doctors in Egypt matching clinical symptoms, specialty, area, and budget, and The query is required not Optional.
 
         Args:
             query: Patient's medical complaint, symptoms, or condition (e.g., 'bleeding gums', 'chest tightness').
