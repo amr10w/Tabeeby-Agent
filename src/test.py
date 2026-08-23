@@ -8,7 +8,7 @@ from agent import Agent
 
 from helpers import get_settings
 
-from tools import DoctorTools,read_file,write_file,list_files,create_directory
+from tools import DoctorTools,read_file,write_file,list_files,create_directory,web_search
 
 from dotenv import load_dotenv
 
@@ -32,7 +32,7 @@ client_db.connect()
 doctor_tool=DoctorTools(embedding_client=client_embed,
             vectordb_client=client_db)
 
-tools = [doctor_tool.search_doctors,read_file,write_file,list_files,create_directory]
+tools = [doctor_tool.search_doctors,read_file,write_file,list_files,create_directory,web_search]
 agent = Agent(client=client,
               tools=tools)
 

@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     VECTOR_DB_PATH: str
     VECTOR_DB_DISTANCE_METHOD: Optional[str] = None
 
+    TAVILY_API_KEY: str = None
+    
     class Config:
         env_file = ".env"
 
