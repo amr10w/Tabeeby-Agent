@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     VECTOR_DB_DISTANCE_METHOD: Optional[str] = None
 
     TAVILY_API_KEY: str = None
+
+    TELEGRAM_BOT_TOKEN:str = None
+    TELEGRAM_WEBHOOK_URL:str =None
     
     class Config:
         env_file = ".env"

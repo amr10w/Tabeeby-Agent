@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from telegram import Bot
 
 from helpers.config import get_settings
 from routes.chat import router as chat_router
-from routes.embed import router as embed_router
+from routes.telegram import router as telegram_router
 from stores.llm.LLMProviderFactory import LLMProviderFactory
 from stores.vectordb.VectorDBProviderFactory import VectorDBProviderFactory
 from agent import Agent
@@ -48,9 +49,22 @@ async def lifespan(app: FastAPI):
         max_iterations=8
     )
 
+    tg_token=config.TELEGRAM_BOT_TOKEN
+    webhook_url=config.TELEGRAM_WEBHOOK_URL
+
+    if tg_token:
+        bot=Bot(token=tg_token)
+        app.state.tg_bot=bot
+        if webhook_url:
+            await bot.set_webhook(url=webhook_url)
+
     yield
 
     # Clean shutdown
+
+    if getattr(app.state, "tg_bot", None):
+        app.state.tg_bot.delete_webhook()
+
     if vector_db_client:
         vector_db_client.disconnect()
 
@@ -61,6 +75,7 @@ app = FastAPI(
 )
 
 app.include_router(chat_router)
+app.include_router(telegram_router)
 
 
 @app.get("/")
