@@ -69,7 +69,7 @@ class DoctorTools:
         """Search for doctors in Egypt matching clinical symptoms, specialty, area, and budget, and The query is required not Optional.
 
         Args:
-            query: Patient's medical complaint, symptoms, or condition (e.g., 'bleeding gums', 'chest tightness').
+            query: Patient's medical complaint, symptoms, or condition (e.g., 'bleeding gums', 'chest tightness') Mandatory.
             area: Clinic location, neighborhood, or city (e.g., 'Nasr City', 'Dokki', 'New Cairo').
             min_fee: Minimum consultation fee in EGP.
             max_fee: Maximum consultation fee budget in EGP.

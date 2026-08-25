@@ -392,24 +392,23 @@ class Agent:
                 tool_name, tool_args = self._extract_tool_call_info(tool_call)
                 raw_result, observation_str = self._execute_tool(tool_name, tool_args)
 
+                if "doctor" in tool_name.lower():
+                    content_to_send = self._format_doctors_context(raw_result)
+                    content_to_send=format_prompt(question=prompt,
+                                                  context=content_to_send)
+                else:
+                    content_to_send = observation_str
+
+
                 # Append standard tool observation message
                 tool_entry = self._construct_message(
-                    prompt=observation_str,
+                    prompt=content_to_send,
                     role=OllamaEnums.TOOL.value,
                     truncate=False,
                 )
                 messages.append(tool_entry)
 
-                # If doctor search was performed, append formatted RAG template
-                if "search" in tool_name.lower() or "doctor" in tool_name.lower():
-                    context_str = self._format_doctors_context(raw_result)
-                    rag_prompt = format_prompt(question=prompt, context=context_str)
-                    rag_entry = self._construct_message(
-                        prompt=rag_prompt,
-                        role=OllamaEnums.USER.value,
-                        truncate=False,
-                    )
-                    messages.append(rag_entry)
+                
 
         # Max iterations reached
         self.logger.warning(
