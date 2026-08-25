@@ -9,7 +9,7 @@ from routes.telegram import router as telegram_router
 from stores.llm.LLMProviderFactory import LLMProviderFactory
 from stores.vectordb.VectorDBProviderFactory import VectorDBProviderFactory
 from agent import Agent
-from tools import DoctorTools,read_file,write_file,list_files,create_directory,web_search
+from tools import DoctorTools,web_search
 
 
 @asynccontextmanager
@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
     doctor_tool=DoctorTools(embedding_client=embedding_client,
                             vectordb_client=vector_db_client)
 
-    ALL_TOOLS = [read_file,write_file,list_files,create_directory,doctor_tool.search_doctors,web_search]
+    ALL_TOOLS = [doctor_tool.search_doctors,web_search]
 
     app.state.agent = Agent(
         client=generation_client,

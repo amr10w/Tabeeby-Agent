@@ -1,13 +1,12 @@
 import logging
-from typing import Any, Dict
+from typing import Dict
 from fastapi import APIRouter, Request, Response, status
 from telegram import Bot, Update
 
 router = APIRouter(prefix="/telegram", tags=["Telegram"])
 logger = logging.getLogger(__name__)
 
-# Simple in-memory session history mapped by Telegram chat_id
-# (Replace with database/Redis for multi-worker production)
+
 USER_SESSIONS: Dict[int, list] = {}
 
 
@@ -54,7 +53,12 @@ async def telegram_webhook(request: Request):
             prompt=user_text,
             chat_history=history,
         )
-        USER_SESSIONS[chat_id] = updated_history[-10:]  # Keep last 10 turns
+
+        if len(updated_history)>11:
+            USER_SESSIONS[chat_id] = [updated_history[0]]+updated_history[-10:]  # 1 system prompt at index 0 + most recent 10 turns
+
+        else:
+            USER_SESSIONS[chat_id]=updated_history[-10:]
         
         await bot.send_message(chat_id=chat_id, text=final_answer)
     except Exception as e:
