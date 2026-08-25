@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     VECTOR_DB_PATH: Optional[str] = None
     VECTOR_DB_DISTANCE_METHOD: Optional[str] = None
 
+
+    VECTOR_DB_API_KEY:Optional[str] = None
+    VECTOR_DB_URL:Optional[str] = None
+
+
     TAVILY_API_KEY: Optional[str] = None 
 
     TELEGRAM_BOT_TOKEN:Optional[str] = None 

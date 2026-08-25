@@ -18,8 +18,8 @@ config = get_settings()
 factory = LLMProviderFactory(config=config)
 factory_db = VectorDBProviderFactory(config=config)
 
-client = factory.create(LLMEnums.OLLAMA.value)
-client_embed = factory.create(LLMEnums.OLLAMAE.value)
+client = factory.create(LLMEnums.GEMINI.value)
+client_embed = factory.create(LLMEnums.GEMINIE.value)
 
 client.set_generation_model(config.GENERATION_MODEL_ID)
 client_embed.set_embedding_model(
