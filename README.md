@@ -20,15 +20,7 @@
 
 ---
 
-## 📹 Video Demo
 
-<!-- Add your video recording or GIF demo below -->
-> 🎬 **Demo Video Coming Soon**  
-> _A comprehensive walkthrough demonstrating clinical triage, colloquial Arabic symptom queries, real-time doctor retrieval from Qdrant Cloud (`vezeeta_doctors`), and direct booking recommendations on Telegram and REST API._
-
-[![Watch Demo](https://img.shields.io/badge/▶_Watch_Demo-Coming_Soon-lightgrey?style=for-the-badge)](#)
-
----
 
 ## 📌 Overview
 
