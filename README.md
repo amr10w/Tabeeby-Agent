@@ -54,28 +54,28 @@ The system is architected into two decoupled subsystems:
 flowchart TD
     %% Offline Pipeline Subgraph
     subgraph Offline["🗄️ Offline Ingestion Pipeline (Separate Standalone Process)"]
-        CSV[("📄 Vezeeta CSV Dataset\nassets/files/vezeeta.csv\n~17,000+ Records")] --> Clean[🧹 Data Cleaning & Validation\nDoctorRecord Pydantic Model]
-        Clean --> Builder[📝 Semantic Text Builder\nSpecialty + Symptoms + Bio]
-        Builder --> Embedder[🧠 Batch Embedding Provider\nGemini / Ollama / OpenAI]
-        Embedder --> Indexer[⚡ Payload Schema Indexer\nKEYWORD: address | INT: fee]
-        Indexer -->|Populates / Resets| QdrantDB[("☁️ Qdrant Vector DB\nCollection: vezeeta_doctors\n17,119 Doctor Vectors")]
+        CSV[("📄 Vezeeta CSV Dataset<br/>assets/files/vezeeta.csv<br/>~17,000+ Records")] --> Clean["🧹 Data Cleaning & Validation<br/>DoctorRecord Pydantic Model"]
+        Clean --> Builder["📝 Semantic Text Builder<br/>Specialty + Symptoms + Bio"]
+        Builder --> Embedder["🧠 Batch Embedding Provider<br/>Gemini / Ollama / OpenAI"]
+        Embedder --> Indexer["⚡ Payload Schema Indexer<br/>KEYWORD: address, INT: fee"]
+        Indexer -->|Populates / Resets| QdrantDB[("☁️ Qdrant Vector DB<br/>Collection: vezeeta_doctors<br/>17,119 Doctor Vectors")]
     end
 
     %% Online Runtime Subgraph
     subgraph Online["⚡ Online Live Agent Runtime (FastAPI & Telegram)"]
-        User([👤 Patient Inquiry\nArabic / Egyptian Slang / English]) --> Gateway{Input Gateway}
-        Gateway -->|HTTP POST /chat| FastAPI[⚡ FastAPI Server]
-        Gateway -->|Webhook /telegram/webhook| TelegramBot[🤖 Telegram Bot]
+        User(["👤 Patient Inquiry<br/>Arabic / Egyptian Slang / English"]) --> Gateway{"Input Gateway"}
+        Gateway -->|HTTP POST /chat| FastAPI["⚡ FastAPI Server"]
+        Gateway -->|Webhook /telegram/webhook| TelegramBot["🤖 Telegram Bot"]
 
-        FastAPI --> Agent[🧠 Tabeeby ReAct Agent]
+        FastAPI --> Agent["🧠 Tabeeby ReAct Agent"]
         TelegramBot --> Agent
 
-        Agent --> Guardrail{Emergency & Safety Guardrails}
-        Guardrail -->|🚨 Life-Threatening Red Flag| EMS[🚑 Ambulance Alert\nDial 123 in Egypt]
-        Guardrail -->|Standard Medical Inquiry| ToolRouter[🛠️ ReAct Tool Execution Router]
+        Agent --> Guardrail{"Emergency & Safety Guardrails"}
+        Guardrail -->|🚨 Life-Threatening Red Flag| EMS["🚑 Ambulance Alert<br/>Dial 123 in Egypt"]
+        Guardrail -->|Standard Medical Inquiry| ToolRouter["🛠️ ReAct Tool Execution Router"]
 
-        ToolRouter -->|1. Semantic Doctor Search| DocTool[🔍 DoctorTools.search_doctors]
-        ToolRouter -->|2. Supplementary Web Search| WebTool[🌐 Tavily Web Search]
+        ToolRouter -->|1. Semantic Doctor Search| DocTool["🔍 DoctorTools.search_doctors"]
+        ToolRouter -->|2. Supplementary Web Search| WebTool["🌐 Tavily Web Search"]
 
         DocTool -->|Vector Similarity + Metadata Filter| QdrantDB
         QdrantDB -->|Top Matching Doctor Profiles| DocTool
@@ -83,7 +83,7 @@ flowchart TD
         DocTool --> Agent
         WebTool --> Agent
 
-        Agent -->|Structured Triage + Doctor Cards + Booking URLs| Response([💬 Response to Patient])
+        Agent -->|Structured Triage + Doctor Cards + Booking URLs| Response(["💬 Response to Patient"])
     end
 
     classDef offlineStyle fill:#f8fafc,stroke:#64748b,stroke-width:2px,stroke-dasharray: 5 5;
