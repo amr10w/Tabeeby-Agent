@@ -394,11 +394,8 @@ class Agent:
 
                 if "doctor" in tool_name.lower():
                     content_to_send = self._format_doctors_context(raw_result)
-                    content_to_send=format_prompt(question=prompt,
-                                                  context=content_to_send)
                 else:
                     content_to_send = observation_str
-
 
                 # Append standard tool observation message
                 tool_entry = self._construct_message(
@@ -407,8 +404,6 @@ class Agent:
                     truncate=False,
                 )
                 messages.append(tool_entry)
-
-                
 
         # Max iterations reached
         self.logger.warning(

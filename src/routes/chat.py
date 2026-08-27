@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
@@ -9,7 +10,7 @@ router = APIRouter(prefix="/chat", tags=["Chat"])
 
 
 @router.post("", response_model=ChatResponse)
-async def chat_endpoint(request: ChatRequest,req:Request) -> ChatResponse:
+async def chat_endpoint(request: ChatRequest, req: Request) -> ChatResponse:
 
     agent: Agent = getattr(req.app.state, "agent", None)
 
@@ -19,12 +20,12 @@ async def chat_endpoint(request: ChatRequest,req:Request) -> ChatResponse:
             content={"signal": ResponseSignal.LLM_CLIENT_NOT_INITIALIZED.value},
         )
 
-    # The agent runs the loop, calls search_doctors if needed, and returns the final answer
-    final_text, history, cost = agent.run(
+    # The agent runs the loop in a worker thread to prevent event loop blocking
+    final_text, history, cost = await asyncio.to_thread(
+        agent.run,
         prompt=request.prompt,
         chat_history=request.chat_history,
-        total_cost=request.total_cost
-        
+        total_cost=request.total_cost,
     )
 
     return JSONResponse(

@@ -2,7 +2,7 @@
 name = "src"
 version = "0.1.0"
 description = "Tabeeby Agent - Autonomous AI Medical Assistant"
-readme = "../README.md"
+readme = "README.md"
 authors = [
     { name = "amr10w", email = "amrw5189@gmail.com" }
 ]
@@ -19,6 +19,7 @@ dependencies = [
     "python-dotenv>=1.2.3",
     "python-telegram-bot>=22.8",
     "qdrant-client>=1.19.0",
+    "redis>=8.1.0",
     "tavily-python>=0.7.27",
     "tqdm>=4.66.0",
     "uvicorn>=0.52.4",

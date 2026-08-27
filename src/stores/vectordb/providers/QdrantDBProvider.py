@@ -177,6 +177,42 @@ class QdrantDBProvider(VectorDBInterface):
         except Exception as e:
             self.logger.error(f"Error creating collection '{collection_name}': {e}")
 
+    def create_payload_index(
+        self,
+        collection_name: str,
+        field_name: str,
+        field_schema: str = "keyword",
+    ):
+        """Create a payload field schema index in Qdrant for filtering."""
+        if not self.client:
+            self.logger.error("Qdrant client is not connected")
+            return
+
+        try:
+            if models is None:
+                return
+
+            schema_type = models.PayloadSchemaType.KEYWORD
+            if field_schema.lower() in ("integer", "int"):
+                schema_type = models.PayloadSchemaType.INTEGER
+            elif field_schema.lower() in ("float",):
+                schema_type = models.PayloadSchemaType.FLOAT
+            elif field_schema.lower() in ("text",):
+                schema_type = models.PayloadSchemaType.TEXT
+            elif field_schema.lower() in ("geo",):
+                schema_type = models.PayloadSchemaType.GEO
+
+            self.client.create_payload_index(
+                collection_name=collection_name,
+                field_name=field_name,
+                field_schema=schema_type,
+            )
+            self.logger.info(
+                f"Created payload index on '{field_name}' ({field_schema}) in '{collection_name}'"
+            )
+        except Exception as e:
+            self.logger.debug(f"Payload index info for '{field_name}': {e}")
+
     # ── data insertion ───────────────────────────────────────────
 
     def insert_one(

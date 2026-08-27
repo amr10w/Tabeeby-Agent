@@ -85,11 +85,8 @@ class DoctorTools:
         if self.client_embedding is None or self.client_vectorDB is None:
             return []
 
-        # Resolve collection name with fallback
+        # Resolve collection name
         target_collection = collection_name or self.collection_name or "vezeeta_doctors"
-        if not self.client_vectorDB.is_collection_existed(target_collection):
-            if self.client_vectorDB.is_collection_existed("vezeeta_doctors"):
-                target_collection = "vezeeta_doctors"
 
         # 1. Embed query
         vec_query = self.client_embedding.embed_text(text=str(query).strip())
@@ -143,11 +140,8 @@ class DoctorTools:
         if self.client_embedding is None or self.client_vectorDB is None:
             return []
 
-        # Resolve collection name with fallback
+        # Resolve collection name
         target_collection = collection_name or self.collection_name or "vezeeta_doctors"
-        if not self.client_vectorDB.is_collection_existed(target_collection):
-            if self.client_vectorDB.is_collection_existed("vezeeta_doctors"):
-                target_collection = "vezeeta_doctors"
 
         vec_query = self.client_embedding.embed_text(text=str(query).strip())
         if not vec_query:

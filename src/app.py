@@ -38,8 +38,12 @@ async def lifespan(app: FastAPI):
     app.state.embedding_client = embedding_client
     app.state.vector_db_client = vector_db_client
 
-    doctor_tool=DoctorTools(embedding_client=embedding_client,
-                            vectordb_client=vector_db_client)
+    collection_name = getattr(config, "VECTOR_DB_COLLECTION_NAME", "vezeeta_doctors") or "vezeeta_doctors"
+    doctor_tool = DoctorTools(
+        embedding_client=embedding_client,
+        vectordb_client=vector_db_client,
+        collection_name=collection_name,
+    )
 
     ALL_TOOLS = [doctor_tool.search_doctors,web_search]
 
@@ -61,9 +65,6 @@ async def lifespan(app: FastAPI):
     yield
 
     # Clean shutdown
-
-    if getattr(app.state, "tg_bot", None):
-        app.state.tg_bot.delete_webhook()
 
     if vector_db_client:
         vector_db_client.disconnect()
