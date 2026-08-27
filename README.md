@@ -52,44 +52,42 @@ The system is architected into two decoupled subsystems:
 
 ```mermaid
 flowchart TD
-    %% Offline Pipeline Subgraph
-    subgraph Offline["🗄️ Offline Ingestion Pipeline (Separate Standalone Process)"]
-        CSV[("📄 Vezeeta CSV Dataset<br/>assets/files/vezeeta.csv<br/>~17,000+ Records")] --> Clean["🧹 Data Cleaning & Validation<br/>DoctorRecord Pydantic Model"]
-        Clean --> Builder["📝 Semantic Text Builder<br/>Specialty + Symptoms + Bio"]
-        Builder --> Embedder["🧠 Batch Embedding Provider<br/>Gemini / Ollama / OpenAI"]
-        Embedder --> Indexer["⚡ Payload Schema Indexer<br/>KEYWORD: address, INT: fee"]
-        Indexer -->|Populates / Resets| QdrantDB[("☁️ Qdrant Vector DB<br/>Collection: vezeeta_doctors<br/>17,119 Doctor Vectors")]
-    end
+    User([👤 Patient Inquiry]) -->|Arabic / English / Egyptian Slang| Gateway{Input Channel}
+    Gateway -->|HTTP POST| FastAPI[⚡ FastAPI /chat]
+    Gateway -->|Webhook| Telegram[🤖 Telegram Bot]
+    
+    FastAPI --> Agent[🧠 Tabeeby ReAct Agent]
+    Telegram --> Agent
+    
+    Agent --> Guardrail{Emergency & Safety Check}
+    Guardrail -->|Red Flag / Emergency| EMS[🚨 Ambulance 123 Alert]
+    Guardrail -->|Standard Medical Inquiry| ToolRouter[🛠️ Tool Execution]
+    
+    ToolRouter -->|Semantic Doctor Search| VectorSearch[🔍 DoctorTools search_doctors]
+    ToolRouter -->|Medical Knowledge Search| WebSearch[🌐 Tavily Web Search]
+    
+    VectorSearch -->|Query Embedding + Filter| Qdrant[("☁️ Qdrant Vector DB<br/>vezeeta_doctors Collection<br/>17,119 Doctors")]
+    Qdrant -->|Top Relevant Doctor Profiles| VectorSearch
+    
+    VectorSearch --> Agent
+    WebSearch --> Agent
+    
+    Agent -->|Structured Triage + Doctor Cards + Booking URLs| Response([💬 Response to Patient])
 
-    %% Online Runtime Subgraph
-    subgraph Online["⚡ Online Live Agent Runtime (FastAPI & Telegram)"]
-        User(["👤 Patient Inquiry<br/>Arabic / Egyptian Slang / English"]) --> Gateway{"Input Gateway"}
-        Gateway -->|HTTP POST /chat| FastAPI["⚡ FastAPI Server"]
-        Gateway -->|Webhook /telegram/webhook| TelegramBot["🤖 Telegram Bot"]
+    %% ==== Offline Ingestion Pipeline (Separate Process) ====
+    IngestStart(("⚙️ Ingestion Pipeline<br/>scripts/ingest_vezeeta.py")) -.->|1. Load Dataset| RawData[/"📄 Vezeeta Doctor CSV<br/>assets/files/vezeeta.csv<br/>17,119 Records"/]
+    RawData -.->|2. Validate & Build Semantic Text| CleanData["🧹 DoctorRecord Model<br/>Pydantic Validation & Indexing"]
+    CleanData -.->|3. Generate Embeddings| Embed["🧠 LLM Embedding Provider<br/>Gemini / Ollama / OpenAI"]
+    Embed -.->|4. Upsert Vectors & Payloads| Qdrant
 
-        FastAPI --> Agent["🧠 Tabeeby ReAct Agent"]
-        TelegramBot --> Agent
+    %% Styling to visually separate the two worlds
+    classDef ingest fill:#fef3c7,stroke:#d97706,stroke-width:2px,stroke-dasharray: 4 3,color:#000;
+    classDef live fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#000;
+    classDef db fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#000;
 
-        Agent --> Guardrail{"Emergency & Safety Guardrails"}
-        Guardrail -->|🚨 Life-Threatening Red Flag| EMS["🚑 Ambulance Alert<br/>Dial 123 in Egypt"]
-        Guardrail -->|Standard Medical Inquiry| ToolRouter["🛠️ ReAct Tool Execution Router"]
-
-        ToolRouter -->|1. Semantic Doctor Search| DocTool["🔍 DoctorTools.search_doctors"]
-        ToolRouter -->|2. Supplementary Web Search| WebTool["🌐 Tavily Web Search"]
-
-        DocTool -->|Vector Similarity + Metadata Filter| QdrantDB
-        QdrantDB -->|Top Matching Doctor Profiles| DocTool
-
-        DocTool --> Agent
-        WebTool --> Agent
-
-        Agent -->|Structured Triage + Doctor Cards + Booking URLs| Response(["💬 Response to Patient"])
-    end
-
-    classDef offlineStyle fill:#f8fafc,stroke:#64748b,stroke-width:2px,stroke-dasharray: 5 5;
-    classDef onlineStyle fill:#f0fdf4,stroke:#16a34a,stroke-width:2px;
-    class Offline offlineStyle;
-    class Online onlineStyle;
+    class IngestStart,RawData,CleanData,Embed ingest
+    class User,Gateway,FastAPI,Telegram,Agent,Guardrail,ToolRouter,VectorSearch,WebSearch,EMS,Response live
+    class Qdrant db
 ```
 
 ---
